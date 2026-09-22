@@ -1,4 +1,4 @@
-# Turing Machine (1 Tape)
+# Turing Machine
 
 A simple **one-tape Turing Machine simulator** written in C++.
 
@@ -21,19 +21,15 @@ A simple **one-tape Turing Machine simulator** written in C++.
 
 ---
 
-## ▶️ How to Compile
-
-```bash
-g++ main.cpp -o tm.exe
-```
-
----
-
 ## ▶️ How to Run
 
-```bash
-tm.exe input.txt
+Run the program from **PowerShell** or **Command Prompt**:
+
+```powershell
+.\main.exe 1.txt
 ```
+
+The `.txt` file is passed as a command-line argument to the program.
 
 ---
 
@@ -120,9 +116,3 @@ After execution, the program prints:
 * Cross-platform support (remove Windows-specific libraries)
 * Better visualization
 * Multi-tape support
-
----
-
-## 📜 License
-
-Free to use for educational purposes.
