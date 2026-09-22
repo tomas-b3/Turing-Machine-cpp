@@ -5,70 +5,83 @@
 #include <fstream>
 #include <windows.h>
 
-using namespace std;
+struct tm_rule {
+    std::string state;
+    char symb;
+    char symb2;
+    char dir;
+    std::string state2;
+};
 
 int main(int argc, char* argv[]) {
 
+    // Check command line arguments
     if (argc < 2) {
-        cout << "No argument" << endl;
+        std::cout << "No argument" << std::endl;
         return 1;
     }
     else {
         for (int i = 0; i < argc; ++i) {
-            cout << "argv[" << i << "]= " << argv[i] << endl;
+            std::cout << "argv[" << i << "] = " << argv[i] << std::endl;
         }
-        cout << "\n";
+
+        std::cout << "\n";
     }
 
-    fstream fin(argv[1]);
+    // Open input file
+    std::fstream fin(argv[1]);
+
     if (!fin) {
-        cout << "Unable to open file" << endl;
+        std::cout << "Unable to open file" << std::endl;
         return 1;
     }
 
-    string line;
-    string tape;
+    std::string line;
+    std::string tape;
     int start;
 
-    while (getline(fin, line)) {
+    // Read the initial tape
+    while (std::getline(fin, line)) {
         if (line != "") {
             tape = line;
             break;
         }
     }
 
-    while (getline(fin, line)) {
+    // Read starting position
+    while (std::getline(fin, line)) {
         if (line != "") {
             int pos = line.find("//");
-            if (pos != string::npos) line = line.substr(0, pos);
-            start = stoi(line);
+
+            if (pos != std::string::npos)
+                line = line.substr(0, pos);
+
+            start = std::stoi(line);
             break;
         }
     }
 
-    struct tm_rule {
-        string state;
-        char symb;
-        char symb2;
-        char dir;
-        string state2;
-    };
-
-    vector<tm_rule> rules;
+    // Read machine rules
+    std::vector<tm_rule> rules;
     tm_rule temp;
 
-    while (fin >> temp.state >> temp.symb >> temp.symb2 >> temp.dir >> temp.state2) {
+    while (fin >> temp.state
+               >> temp.symb
+               >> temp.symb2
+               >> temp.dir
+               >> temp.state2) {
+
         rules.push_back(temp);
     }
 
-    string tape_now = tape;
+    std::string tape_now = tape;
     int head = start - 1;
     char blank = '_';
-    string state = "0";
+    std::string state = "0";
 
     long long steps = 0;
 
-    // If it moves in the same direction 10000 times in a row, ask whether to continue
+    // Used to detect long movement in one direction
     long long dirCount = 0;
     char last = '0';
 
@@ -76,16 +89,19 @@ int main(int argc, char* argv[]) {
 
         if (_kbhit()) {
             char c = _getch();
+
             if (c == 'p' || c == 'P') {
-                cout << "Stopped" << endl;
+                std::cout << "Stopped" << std::endl;
                 break;
             }
         }
 
+        // Expand tape when the head reaches an edge
         if (head < 0) {
             tape_now = blank + tape_now;
             head = 0;
         }
+
         if (head >= tape_now.size()) {
             tape_now = tape_now + blank;
         }
@@ -93,9 +109,12 @@ int main(int argc, char* argv[]) {
         char read = tape_now[head];
 
         int idx = -1;
+
+        // Find a rule for the current state and symbol
         for (int i = 0; i < rules.size(); i++) {
             if (rules[i].state == state &&
                 rules[i].symb == read) {
+
                 idx = i;
                 break;
             }
@@ -103,31 +122,38 @@ int main(int argc, char* argv[]) {
 
         system("cls");
 
-        cout << "Press P to stop the machine" << endl;
+        std::cout << "Press P to stop the machine" << std::endl;
 
-        cout << "Step: " << steps << endl;
-        cout << "State: " << state << endl;
+        std::cout << "Step: " << steps << std::endl;
+        std::cout << "State: " << state << std::endl;
 
         if (idx != -1)
-            cout << "Looking for: " << rules[idx].symb << endl;
+            std::cout << "Looking for: " << rules[idx].symb << std::endl;
 
-        cout << endl;
+        std::cout << std::endl;
 
-        cout << tape_now << endl;
+        std::cout << tape_now << std::endl;
 
         int arrow = head - 1;
-        if (arrow < 0) arrow = 0;
+
+        if (arrow < 0)
+            arrow = 0;
 
         for (int i = 0; i < arrow; i++)
-            cout << " ";
-        cout << "^" << endl;
+            std::cout << " ";
+
+        std::cout << "^" << std::endl;
 
         Sleep(10);
 
-        if (idx == -1) break;
+        if (idx == -1)
+            break;
 
+        // Count consecutive moves in the same direction
         if (rules[idx].dir == 'L' || rules[idx].dir == 'R') {
-            if (last == rules[idx].dir) dirCount++;
+
+            if (last == rules[idx].dir)
+                dirCount++;
             else {
                 last = rules[idx].dir;
                 dirCount = 1;
@@ -140,21 +166,34 @@ int main(int argc, char* argv[]) {
 
         if (dirCount >= 10000) {
             system("cls");
-            cout << "Infinite expansion detected. Continue? Y or N" << endl;
+
+            std::cout << "Infinite expansion detected. Continue? Y or N" << std::endl;
+
             char ans = 0;
+
             while (true) {
                 ans = _getch();
-                if (ans == 'Y' || ans == 'y' || ans == 'N' || ans == 'n') break;
+
+                if (ans == 'Y' || ans == 'y' ||
+                    ans == 'N' || ans == 'n') {
+
+                    break;
+                }
             }
-            if (ans == 'N' || ans == 'n') break;
+
+            if (ans == 'N' || ans == 'n')
+                break;
+
             last = '0';
             dirCount = 0;
         }
 
         tape_now[head] = rules[idx].symb2;
 
-        if (rules[idx].dir == 'L') head--;
-        else if (rules[idx].dir == 'R') head++;
+        if (rules[idx].dir == 'L')
+            head--;
+        else if (rules[idx].dir == 'R')
+            head++;
 
         state = rules[idx].state2;
         steps++;
@@ -164,16 +203,17 @@ int main(int argc, char* argv[]) {
         tape_now = blank + tape_now;
         head = 0;
     }
+
     if (head >= tape_now.size()) {
         tape_now = tape_now + blank;
     }
 
-    cout << "Tapes: 1" << endl;
-    cout << "Steps: " << steps << endl;
-    cout << "State: " << state << endl;
-    cout << "Head: " << head << endl;
-    cout << "Tape: " << tape_now << endl;
-    cout << "Symbol: " << tape_now[head] << endl;
+    std::cout << "Tapes: 1" << std::endl;
+    std::cout << "Steps: " << steps << std::endl;
+    std::cout << "State: " << state << std::endl;
+    std::cout << "Head: " << head << std::endl;
+    std::cout << "Tape: " << tape_now << std::endl;
+    std::cout << "Symbol: " << tape_now[head] << std::endl;
 
     return 0;
 }
